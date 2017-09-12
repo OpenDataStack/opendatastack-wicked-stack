@@ -1,0 +1,25 @@
+{
+  "apis": [
+    {
+      "id": "petstore",
+      "name": "Petstore",
+      "desc": "This is a sample Petstore server. You can find out more about Swagger at [http://swagger.io](http://swagger.io).",
+      "auth": "key-auth",
+      "tags": [
+        "Sample"
+      ],
+      "plans": [
+        "basic",
+        "unlimited"
+      ]
+    }
+  ],
+  "_links": {
+    "self": {
+      "href": "/apis"
+    },
+    "plans": {
+      "href": "/plans"
+    }
+  }
+}
