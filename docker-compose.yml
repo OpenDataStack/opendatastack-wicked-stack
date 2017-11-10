@@ -17,16 +17,10 @@ services:
     - "STATS_PORT=1936"
     restart: unless-stopped
 
-  kongdb-data:
+  kong-database:
     image: postgres:9.6
     volumes:
     - "/var/lib/postgresql/data"
-    command: "/bin/true"
-
-  kong-database:
-    image: postgres:9.6
-    volumes_from:
-    - "kongdb-data"
     environment:
     - "POSTGRES_USER=kong"
     - "POSTGRES_PASSWORD=kong"
@@ -49,29 +43,18 @@ services:
     - "SSL_CERT=${GATEWAY_PEM}"
     restart: unless-stopped
 
-  portal-api-data-static:
-    build: 
-      context: static
-    volumes:
-    - "/var/portal-api/static"
-    command: "/bin/true"
-
-  portal-api-data-dynamic:
-    image: haufelexware/wicked.portal-api:latest
-    volumes:
-    - "/var/portal-api/dynamic"
-    command: "/bin/true"
-
   portal-api:
-    env_file: variables.env  
     image: haufelexware/wicked.portal-api:latest
-    volumes_from:
-    - "portal-api-data-static"
-    - "portal-api-data-dynamic"
+    environment:
+    - "NODE_ENV=default"
+    - "PORTAL_CONFIG_KEY=2c94d4ffce4b631a776289dca18bc9afec60f667"
+    - "PORTAL_NETWORK_APIHOST=portal.local"
+    - "GIT_REPO=https://github.com/OpenDataStack/wicked-config.git"
+    - "GIT_CREDENTIALS=angrycactus-bot:A-1redwarrior+"
+    - "GIT_BRANCH=master"
     restart: unless-stopped
 
   portal:
-    env_file: variables.env  
     image: haufelexware/wicked.portal:latest
     depends_on:
     - "portal-api"
@@ -84,21 +67,18 @@ services:
     restart: unless-stopped
 
   portal-kong-adapter:
-    env_file: variables.env  
     image: haufelexware/wicked.portal-kong-adapter:latest
     depends_on:
     - "portal-api"
     restart: unless-stopped
 
   portal-mailer:
-    env_file: variables.env  
     image: haufelexware/wicked.portal-mailer:latest
     restart: unless-stopped
     depends_on:
     - "portal-api"
 
   portal-chatbot:
-    env_file: variables.env  
     image: haufelexware/wicked.portal-chatbot:latest
     restart: unless-stopped
     depends_on:
