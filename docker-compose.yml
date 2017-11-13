@@ -2,20 +2,21 @@ version: '2'
 
 services:
 
-  publb:
-    image: dockercloud/haproxy:1.6.7
-    ports:
-    - "443:443"
-    - "1936:1936"
-    links:
-    - portal
-    - kong
-    volumes:
-    - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-    - "STATS_AUTH=stats:stats"
-    - "STATS_PORT=1936"
-    restart: unless-stopped
+#  publb:
+#    image: dockercloud/haproxy:1.6.7
+#    ports:
+#    - "80:80"
+#    - "443:443"
+#    - "1936:1936"
+#    links:
+#    - portal
+#    - kong
+#    volumes:
+#    - /var/run/docker.sock:/var/run/docker.sock
+#    environment:
+#    - "STATS_AUTH=stats:stats"
+#    - "STATS_PORT=1936"
+#    restart: unless-stopped
 
   kong-database:
     image: postgres:9.6
@@ -34,42 +35,59 @@ services:
     - seccomp:unconfined
     expose:
     - "8000"
+    - "8001"
     environment:
     - "DATABASE=postgres"
-    - "VIRTUAL_HOST=https://api.portal.local:443"
-    - "VIRTUAL_HOST_WEIGHT=100"
-    - "EXCLUDE_PORTS=7946,8001,8443"
-    - "EXTRA_SETTINGS=http-request set-header X-Forwarded-Port %[dst_port]"
-    - "SSL_CERT=${GATEWAY_PEM}"
+#    - "VIRTUAL_HOST=api.portal.local"
+#    - "VIRTUAL_HOST_WEIGHT=100"
+#    - "EXCLUDE_PORTS=7946,8001,8443"
+#    - "EXTRA_SETTINGS=http-request set-header X-Forwarded-Port %[dst_port]"
+#    - "SSL_CERT=${GATEWAY_PEM}"
     restart: unless-stopped
+    ports:
+    - "8000:8000"
+    - "8001:8001"
+#    - "443:443"
+#    - "1936:1936"
 
   portal-api:
     image: haufelexware/wicked.portal-api:latest
     environment:
     - "NODE_ENV=default"
     - "PORTAL_CONFIG_KEY=2c94d4ffce4b631a776289dca18bc9afec60f667"
-    - "PORTAL_NETWORK_APIHOST=portal.local"
+    - "PORTAL_NETWORK_APIHOST=localhost:3000"
+    - "PORTAL_API_URL=localhost:8000"
     - "GIT_REPO=https://github.com/OpenDataStack/wicked-config.git"
     - "GIT_CREDENTIALS=angrycactus-bot:A-1redwarrior+"
-    - "GIT_BRANCH=master"
+    - "GIT_BRANCH=test"
+#    - "GIT_REVISION=1751892d736f72473ee98ea976cd948ece541b29"
     restart: unless-stopped
 
   portal:
     image: haufelexware/wicked.portal:latest
     depends_on:
     - "portal-api"
+    - "kong"
     expose:
     - "3000"
-    environment:
-    - "VIRTUAL_HOST=https://portal.local:443"
-    - "VIRTUAL_HOST_WEIGHT=0"
-    - "SSL_CERT=${PORTAL_PEM}"
+#    environment:
+#    - "VIRTUAL_HOST=portal.local"
+#    - "VIRTUAL_HOST_WEIGHT=0"
+#    - "SSL_CERT=${PORTAL_PEM}"
     restart: unless-stopped
+    ports:
+    - "3000:3000"
 
   portal-kong-adapter:
     image: haufelexware/wicked.portal-kong-adapter:latest
     depends_on:
     - "portal-api"
+    - "kong"
+    environment:
+    - "NODE_ENV=default"
+    - "PORTAL_CONFIG_KEY=2c94d4ffce4b631a776289dca18bc9afec60f667"
+    - "PORTAL_NETWORK_APIHOST=localhost:3000"
+    - "PORTAL_API_URL=http://localhost:8000"
     restart: unless-stopped
 
   portal-mailer:
