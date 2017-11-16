@@ -84,20 +84,11 @@ services:
     - "portal-api"
     - "kong"
     environment:
-    - "NODE_ENV=default"
     - "PORTAL_CONFIG_KEY=2c94d4ffce4b631a776289dca18bc9afec60f667"
-    - "PORTAL_NETWORK_APIHOST=localhost:3000"
-    - "PORTAL_API_URL=http://localhost:8000"
     restart: unless-stopped
 
   portal-mailer:
     image: haufelexware/wicked.portal-mailer:latest
-    restart: unless-stopped
-    depends_on:
-    - "portal-api"
-
-  portal-chatbot:
-    image: haufelexware/wicked.portal-chatbot:latest
     restart: unless-stopped
     depends_on:
     - "portal-api"
