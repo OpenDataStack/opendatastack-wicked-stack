@@ -57,7 +57,6 @@ services:
       - "PORTAL_CONFIG_KEY=2c94d4ffce4b631a776289dca18bc9afec60f667"
       - "GIT_REPO=https://github.com/OpenDataStack/wicked-config.git"
       - "GIT_CREDENTIALS=angrycactus-bot"
-      - "GIT_BRANCH=test"
     restart: unless-stopped
 
   portal:
